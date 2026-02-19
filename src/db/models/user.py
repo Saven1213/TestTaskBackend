@@ -1,6 +1,6 @@
+from datetime import datetime
 
-
-from sqlalchemy import Integer, Boolean, String
+from sqlalchemy import Integer, Boolean, String, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.db.models.base import Base
@@ -21,6 +21,8 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(String)
 
     is_active: Mapped[bool] = mapped_column(Boolean)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
 

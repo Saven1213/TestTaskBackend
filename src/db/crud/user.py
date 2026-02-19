@@ -1,34 +1,26 @@
 from cgitb import reset
 
-from sqlalchemy import select
+from sqlalchemy import select, update, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.db.models.user import User
-from src.schemas.user import UserOut
+from src.schemas.auth import UserOut
 from src.security.hashing import get_password_hash
 
 
-async def add_user(
-        session: AsyncSession,
-        email: str,
-        password: str,
-        first_name: str,
-        last_name: str,
-        middle_name: str | None
-) -> User:
-    hashed_password = get_password_hash(password)
-
+async def add_user(session: AsyncSession, email: str, first_name: str, last_name: str,
+                   middle_name: str | None, password: str) -> User:
     user = User(
         email=email,
-        hashed_password=hashed_password,
         first_name=first_name,
         last_name=last_name,
         middle_name=middle_name,
+        hashed_password=get_password_hash(password),
         is_active=True
     )
 
     session.add(user)
-
     await session.commit()
+    await session.refresh(user)
 
     return user
 
@@ -54,33 +46,43 @@ async def change_status(
     if user:
         user.is_active = status
         await session.commit()
+        await session.refresh(user)
         return True
 
     return False
+
+
+
 
 async def update_user(
     session: AsyncSession,
     email: str,
     first_name: str,
     last_name: str,
-    middle_name: str,
+    middle_name: str | None,
     password: str
-) -> User | None:
+) -> User:
+    """
+    Обновление существующего пользователя по email.
+    Возвращает обновленный ORM объект User.
+    """
+    result = await session.execute(
+        select(User).where(User.email == email)
+    )
+    user = result.scalar_one()
 
-    result = await session.execute(select(User).where(User.email == email))
 
-    user = result.scalar_one_or_none()
-
-    if user:
-        user.email = email
-        user.first_name = first_name
-        user.last_name = last_name
-        user.middle_name = middle_name
-        user.hashed_password = get_password_hash(password)
+    user.first_name = first_name
+    user.last_name = last_name
+    user.middle_name = middle_name
+    user.hashed_password = get_password_hash(password)
+    user.is_active = True
 
     await session.commit()
+    await session.refresh(user)
 
     return user
+
 
 
 

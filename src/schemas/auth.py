@@ -1,3 +1,5 @@
+
+
 from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime
 
@@ -16,13 +18,18 @@ class UserOut(BaseModel):
     email: EmailStr
     first_name: str
     last_name: str
-    middle_name: str | None = None
+    middle_name: str
     is_active: bool
     created_at: datetime
 
     class Config:
         from_attributes = True
         exclude = {"hashed_password"}
+
+class Token(BaseModel):
+    token_type: str
+    access_token: str
+    refresh_token: str
 
 
 
