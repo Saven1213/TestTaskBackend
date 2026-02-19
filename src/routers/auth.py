@@ -50,7 +50,8 @@ async def register_new_user(
         "first_name": user_data.first_name,
         "last_name": user_data.last_name,
         "middle_name": user_data.middle_name,
-        "password": user_data.password
+        "password": user_data.password,
+        "is_active": True
     }
 
     try:
