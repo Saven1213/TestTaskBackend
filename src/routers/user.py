@@ -5,7 +5,7 @@ from sqlalchemy import select
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.db.crud.user import get_user_by_id, update_user
+from src.db.crud.user import get_user_by_id, update_user, delete_account_user
 from src.db.session import get_db
 from src.schemas.user import UserUpdateOut, UserUpdate
 from src.schemas.auth import UserOut
@@ -60,3 +60,20 @@ async def update_my_profile(
     )
 
     return response_data
+
+@router.post('/me/delete_account')
+async def delete_account(
+        current_user: User = Depends(get_current_user),
+        db: AsyncSession = Depends(get_db)
+):
+    is_delete = await delete_account_user(user_id=current_user.id, session=db)
+
+    if is_delete:
+        return {'message': 'Аккаунт успешно удален'}
+
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Пользователь не найден'
+        )
+

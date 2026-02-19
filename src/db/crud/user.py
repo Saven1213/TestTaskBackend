@@ -124,6 +124,19 @@ async def get_user_by_id(
 
     return user
 
+async def delete_account_user(session: AsyncSession, user_id: int) -> bool:
+    result = await session.execute(select(User).where(User.id == user_id))
+
+    user = result.scalar_one_or_none()
+
+    if user:
+        user.is_active = False
+
+        await session.commit()
+
+        return True
+    return False
+
 
 
 
